@@ -13,4 +13,5 @@
 1.06 - fixed bug in parameter to PT::R->parseConfig, causing loading of perltidy configs to fail
      - fixed minor inefficiency where section list was reconstructed over and over, when it can be done just once
      - fixed bug where a config section heading was being printed twice
-1.07 - POD for indexing by CPAN
+1.07 - pod for CPAN indexing
+1.08 - tweak MANIFEST

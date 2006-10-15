@@ -1,6 +1,7 @@
 lib/PerlTidy/Options.pm
 lib/PerlTidy/Run.pm
 lib/PerlTidy/t/Options.t
+lib/Perl/Tidyview.pm
 lib/TidyView/Frame.pm
 lib/TidyView/Options.pm
 lib/TidyView/t/Frame.t
