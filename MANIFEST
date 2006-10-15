@@ -1,0 +1,19 @@
+lib/PerlTidy/Options.pm
+lib/PerlTidy/Run.pm
+lib/PerlTidy/t/Options.t
+lib/TidyView/Frame.pm
+lib/TidyView/Options.pm
+lib/TidyView/t/Frame.t
+lib/TidyView/t/Options.t
+lib/TidyView/Text.pm
+lib/TidyView/t/Text.t
+lib/VERSION.pm
+bin/log.conf
+Makefile.PL
+MANIFEST			This list of files
+META.yml			Module meta-data (added by MakeMaker)
+bin/perlenv.bash
+bin/tidyview.pl
+TODO
+Changes
+README
