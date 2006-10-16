@@ -15,3 +15,4 @@
      - fixed bug where a config section heading was being printed twice
 1.07 - pod for CPAN indexing
 1.08 - tweak MANIFEST
+1.09 - Perl/Tidyview not required for CPAN indexing, removed
