@@ -16,3 +16,5 @@
 1.07 - pod for CPAN indexing
 1.08 - tweak MANIFEST
 1.09 - Perl/Tidyview not required for CPAN indexing, removed
+1.10 - move lib/VERSION.pm to lib/TidyView/VERSION.pm to keep the application specific version safe
+     - added Perl::Tidy as a dependency
