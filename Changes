@@ -18,3 +18,6 @@
 1.09 - Perl/Tidyview not required for CPAN indexing, removed
 1.10 - move lib/VERSION.pm to lib/TidyView/VERSION.pm to keep the application specific version safe
      - added Perl::Tidy as a dependency
+1.11 - merged contributed patch for coloured diffs from mjcarman - thanx heaps!!!
+     - added in support for reporting semantic ruination caused by an options, via Perl::Signature.
+     - fix bug if user cancels from file selecion dialogue

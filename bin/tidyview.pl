@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+#use lib 'C:\Documents and Settings\mjcarman\Desktop\tidyview-dev\lib';
 
 use strict;
 
@@ -8,6 +9,9 @@ use Tk qw(MainLoop);
 use TidyView::Frame;
 use TidyView::Text;
 use TidyView::Options;
+use TidyView::Display;
+use TidyView::VERSION;
+
 use Tk::FBox;
 use Tk::Scrollbar;
 
@@ -16,8 +20,6 @@ use PerlTidy::Run;
 
 use Getopt::Long;
 use Pod::Usage;
-
-use VERSION;			# perhaps we should move this to TidyView::VERSION ?
 
 use IO::File;
 
@@ -38,7 +40,7 @@ pod2usage(
 	  -verbose    => 2
 	 ) if $man;
 
-showVersion() if $version;
+__PACKAGE__->showVersion() if $version;
 
 # whilst we are still in aphla, we should keep this - perhaps we'll remove this once its more mature and we need less introspection
 use Log::Log4perl qw( :levels get_logger );
@@ -67,6 +69,7 @@ my $currentConfigFile;
 
 # setup our initial GUI layout
 (my $top = MainWindow->new())->minsize(800, 600);
+$top->withdraw();
 
 # Frame for the all the load/save/exit/etc buttons
 
@@ -124,7 +127,7 @@ my $saveButtonFrame =  TidyView::Frame->new(
 # another button for generating the .perltidyrc with the users currently selected option set
 (my $saveOptions = $saveButtonFrame->Button(
 					    -text    => "Save perltidy config",
-					    -command => createGenerateOptionsCallback(parent => $saveButtonFrame),
+					    -command => __PACKAGE__->createGenerateOptionsCallback(parent => $saveButtonFrame),
 					   ))->pack(
 						    -side   =>'left',
 						    -anchor => 's',
@@ -135,7 +138,7 @@ my $saveButtonFrame =  TidyView::Frame->new(
 # another button for generating the .perltidyrc with the users currently selected option set, but asking for the name to save as
 (my $saveOptionsAs = $saveButtonFrame->Button(
 					      -text    => "Save perltidy config As...",
-					      -command => createGenerateOptionsFromDialogueCallback(parent => $saveButtonFrame),
+					      -command => __PACKAGE__->createGenerateOptionsFromDialogueCallback(parent => $saveButtonFrame),
 					     ))->pack(
 						      -side   =>'right',
 						      -anchor => 's',
@@ -171,74 +174,24 @@ my $tidiedTextFrame   = TidyView::Frame->new(
 							    },
 					    );
 
-my $originalText = TidyView::Text->new(
-				       parent => $originalTextFrame,
-				       file   => $fileToTidy,
-				      );
+my $originalTextWidget  = TidyView::Text->new(parent => $originalTextFrame, scrollbar => $lockedScroller);
+my $tidyTextWidget      = TidyView::Text->new(parent => $tidiedTextFrame,   scrollbar => $lockedScroller);
 
-my $tidyText     = TidyView::Text->new(
-				       parent => $tidiedTextFrame,
-				       file   => $fileToTidy,
-				      );
-
-# run the file through whatever defaults may apply
-
-my $tidiedText = PerlTidy::Run->execute(
-					file         => $fileToTidy,
+TidyView::Display->preview_tidy_changes(
+					rootWindow         => $top,
+					fileToTidy         => $fileToTidy,
+					originalTextWidget => $originalTextWidget ,
+					tidyTextWidget     => $tidyTextWidget ,
 				       );
-
-$tidyText->replace($tidiedText);
-
-# we need to adjust one of the yview values so the bigger pane stays in sync with the smaller
-TidyView::Text->balanceText(
-			    left  => $originalText,
-			    right => $tidyText
-			   );
-
-my $textWidgets = [$originalText, $tidyText];
-
-# ok - here we are setting up two text panes locked to one scroll bar
-
-# now because they may be different lengths, we should make sure all movement is locked to the shorter on - 
-# that way we dont get "quivering" in the scrollbar and text pane as the yviewMoveto tries to move out of range
-
-sub scrollTextWidgets {
-  my ($scrollbar, $scrolledTextWidget, $textWidgets, @args) = @_;
-
-  $scrollbar->set(@args);
-
-  my ($top) = $scrolledTextWidget->yview();
-
-  foreach my $textWidget (@$textWidgets) {
-    $textWidget->yviewMoveto($top);
-  }
-}
-
-foreach my $textWidget (@$textWidgets) {
-  # configure the widgets to talk to the scrollbar
-  $textWidget->configure(-yscrollcommand => [
-					     \&scrollTextWidgets,
-					     $lockedScroller,
-					     $textWidget,
-					     $textWidgets,
-					    ],);
-}
-
-# configure the scrollbar to talk to the widgets
-$lockedScroller->configure(-command => sub {
-			     foreach my $textWidget (@$textWidgets) {
-			       $textWidget->yview(@_);
-			     }
-			   }
-			  );
 
 # hit this button to run perltidy with your currently selected options and see the reformatted code in righthand frame
 (my $runButton = $buttonFrame->Button(
 				      -text    => "Run PerlTidy with these options",
-				      -command => createRunPerlTidyCallback(
-									    textWidget => $tidyText,
-									    file       => $fileToTidy,
-									   ),
+				      -command => __PACKAGE__->createRunPerlTidyCallback(
+											 fileToTidy         => $fileToTidy,
+											 originalTextWidget => $originalTextWidget ,
+											 tidyTextWidget     => $tidyTextWidget ,
+											),
 				     ))->pack(
 					      -side   =>'top',
 					      -anchor => 's',
@@ -248,33 +201,40 @@ $lockedScroller->configure(-command => sub {
 # hit this button to load a new  perltidy config file
 (my $loadButton = $buttonFrame->Button(
 				       -text    => "Load .perltidyrc ...",
-				       -command => createLoadPerlTidyRcCallback(
-										parent       => $optionFrame,
-										textWidget   => $tidyText,
-										file         => $fileToTidy,
-									       ),
+				       -command => __PACKAGE__->createLoadPerlTidyRcCallback(
+											     parent             => $optionFrame,
+											     fileToTidy         => $fileToTidy,
+											     originalTextWidget => $originalTextWidget,
+											     tidyTextWidget     => $tidyTextWidget ,
+											    ),
 				      ))->pack(
 					       -side   =>'top',
 					       -anchor => 's',
 					       -fill   => 'x',
 					      );
 
+$top->update();
+$top->deiconify();
+$top->raise();
+$top->update();
 MainLoop;
 
 exit 0;
 
 # create a sub that is run when the run button is pressed
 sub createRunPerlTidyCallback {
-  my (%args) = @_;
+  my ($self, %args) = @_;
 
-  my ($textWidget, $file) = @args{qw(textWidget file)};
+  my ($fileToTidy, $originalTextWidget, $tidiedTextWidget) = @args{qw(fileToTidy originalTextWidget tidyTextWidget)};
 
   return sub {
     my $logger = get_logger((caller(0))[3]);
-
-    my $tidiedText = PerlTidy::Run->execute(file => $args{file});
-
-    $textWidget->replace($tidiedText);
+    TidyView::Display->preview_tidy_changes(
+					    rootWindow         => $top,
+					    fileToTidy         => $fileToTidy,
+					    originalTextWidget => $originalTextWidget,
+					    tidyTextWidget     => $tidiedTextWidget,
+					   );
   }
 }
 
@@ -283,7 +243,7 @@ sub createRunPerlTidyCallback {
 # it would be nice to generate CVS/Subversion/ClearCase/whatever pre/post commit hok scripts
 
 sub createGenerateOptionsCallback {
-  my (%args) = @_;
+  my ($self, %args) = @_;
 
   my ($parent) = @args{qw(parent)};
 
@@ -294,49 +254,16 @@ sub createGenerateOptionsCallback {
       $currentConfigFile = $parent->FBox(-type => 'save')->Show();
     }
 
-    saveOptions($currentConfigFile);
+    return unless defined $currentConfigFile; # cancelled picking a file ?
+
+    $self->saveOptions($currentConfigFile);
   };
-}
-
-sub createGenerateOptionsFromDialogueCallback {
-  my (%args) = @_;
-
-  my ($parent) = @args{qw(parent)};
-
-  return sub {
-    my $logger = get_logger((caller(0))[3]);
-
-    $currentConfigFile = $parent->FBox(-type => 'save')->Show();
-
-    saveOptions($currentConfigFile);
-  };
-}
-
-sub saveOptions {
-  my ($fileName) = @_;
-
-  my $fh = IO::File->new($fileName, O_RDWR | O_CREAT | O_TRUNC)
-    or $top->messageBox(
-			-title   => 'Problem Saving File',
-			-icon    => 'warning',
-			-type    => 'Ok',
-			-message => "Problem saving $fileName\n\n$!"
-		       )
-      and return;
-
-  $fh->print(TidyView::Options->assembleOptions(separator => "\n")); # output options, one per line
-
-  $fh->print(TidyView::Options->assembleUnsupportedOptions(separator => "\n"));
-
-  $fh->close();
-
-  return;
 }
 
 sub createLoadPerlTidyRcCallback {
-  my (%args) = @_;
+  my ($self, %args) = @_;
 
-  my ($parent, $file, $textWidget) = @args{qw(parent file textWidget)};
+  my ($parent, $fileToTidy, $originalTextWidget, $tidyTextWidget) = @args{qw(parent fileToTidy originalTextWidget tidyTextWidget)};
 
   return sub {
     my $logger = get_logger((caller(0))[3]);
@@ -386,17 +313,55 @@ sub createLoadPerlTidyRcCallback {
 				       );
 
     # run perltidy with this new config
-
-    my $tidiedText = PerlTidy::Run->execute(file => $args{file},);
-
-    # replace the rhs text widgets text
-    $textWidget->replace($tidiedText);
+    TidyView::Display->preview_tidy_changes(
+					    rootWindow         => $top,
+					    fileToTidy         => $fileToTidy,
+					    originalTextWidget => $originalTextWidget,
+					    tidyTextWidget     => $tidyTextWidget,
+					   );
 
     # do save to here from now on, until told to change...
     $currentConfigFile = $configFileName;
 
     return;
   };
+}
+
+sub createGenerateOptionsFromDialogueCallback {
+  my ($self, %args) = @_;
+
+  my ($parent) = @args{qw(parent)};
+
+  return sub {
+    my $logger = get_logger((caller(0))[3]);
+
+    my $possibleNewConfigFile = $parent->FBox(-type => 'save')->Show();
+
+    return unless defined $possibleNewConfigFile;
+
+    $self->saveOptions($currentConfigFile = $possibleNewConfigFile);
+  };
+}
+
+sub saveOptions {
+  my ($self, $fileName) = @_;
+
+  my $fh = IO::File->new($fileName, O_RDWR | O_CREAT | O_TRUNC)
+    or $top->messageBox(
+			-title   => 'Problem opening save File',
+			-icon    => 'warning',
+			-type    => 'Ok',
+			-message => "Problem saving $fileName\n\n$!"
+		       )
+      and return;
+
+  $fh->print(TidyView::Options->assembleOptions(separator => "\n")); # output options, one per line
+
+  $fh->print(TidyView::Options->assembleUnsupportedOptions(separator => "\n"));
+
+  $fh->close();
+
+  return;
 }
 
 # when tidyview called with -v|--version, do this...
@@ -413,9 +378,9 @@ Complete documentation for tidyview can be found using 'tidyview --help'.
 
 EOM
 }
-
-
 __END__
+
+=pod
 
 =head1 NAME
 

@@ -32,7 +32,7 @@ sub execute {
 		      );
 
 
-  return wantarray ? split(/$/, $resultString) : $resultString; # split on whatever we think an EOL is - dont forget we run on many platforms
+  return wantarray ? split(/^/m, $resultString) : $resultString;
 }
 
 # get all the option names, types, ranges and defaults from Perl::Tidy, and place them various data structures

@@ -1,5 +1,4 @@
 Change output format to use perltidy sections, rather than the GUI-oriented sections it has now.
-Add support for colourised diff for the before and after text panes.
 Add support for additive config files.
 Add button to generate cvs/svn pre-commit hooks.
 Stop ridiculously long option lists pushing things off the screen.

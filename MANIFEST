@@ -3,10 +3,10 @@ lib/PerlTidy/Run.pm
 lib/PerlTidy/t/Options.t
 lib/TidyView/Frame.pm
 lib/TidyView/Options.pm
+lib/TidyView/Display.pm
 lib/TidyView/t/Frame.t
 lib/TidyView/t/Options.t
 lib/TidyView/Text.pm
-lib/TidyView/t/Text.t
 lib/TidyView/VERSION.pm
 bin/log.conf
 Makefile.PL
