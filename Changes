@@ -21,3 +21,5 @@
 1.11 - merged contributed patch for coloured diffs from mjcarman - thanx heaps!!!
      - added in support for reporting semantic ruination caused by an options, via Perl::Signature.
      - fix bug if user cancels from file selecion dialogue
+1.12 - coloured diff algorithms from Michael Carman, add a "mod" colour to replace add/del sequences
+

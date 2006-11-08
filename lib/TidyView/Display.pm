@@ -111,8 +111,8 @@ sub show_diff_text {
   my @diff = Algorithm::Diff::sdiff($left, $right);
 
   my @tag = (
-	     {'u' => 'norm', 'c' => 'del', '-' => 'del', '+' => 'del'},
-	     {'u' => 'norm', 'c' => 'add', '-' => 'add', '+' => 'add'},
+	     {'u' => 'norm', 'c' => 'mod', '-' => 'del', '+' => 'del'},
+	     {'u' => 'norm', 'c' => 'mod', '-' => 'add', '+' => 'add'},
 	    );
 
   my @ln = (1,  1);
@@ -125,8 +125,8 @@ sub show_diff_text {
       # Remove any trailing newline so that it won't cause the tag to
       # highlight to EOL.
       my @nl = (chomp $d->[1], chomp $d->[2]);
-      my $dx = [split(qr/(\s+|\b)/, $d->[1])]; # word diff
-      my $dy = [split(qr/(\s+|\b)/, $d->[2])]; # word diff
+      my $dx = [split(qr/(\s+|\W)/, $d->[1])]; # word diff
+      my $dy = [split(qr/(\s+|\W)/, $d->[2])]; # word diff
       my @dd = Algorithm::Diff::sdiff($dx, $dy);
 
       foreach my $d (@dd) {

@@ -12,10 +12,11 @@ use Data::Dumper;
 my @scrolledWidgets = (); # scrollbar-linked widgets
 
 my %color = (
-	norm   => [],
-	add    => [-background => '#aaffaa'],
-	del    => [-background => '#ffaaaa'],
-	pad    => [-background => '#f0f0f0'],
+	     norm   => [],
+	     add    => [-background => '#8aff8a'],
+	     mod    => [-background => '#aea7ff'],
+	     del    => [-background => '#ff8a8a'],
+	     pad    => [-background => '#f8f8f8'],
 );
 
 sub new {
@@ -56,6 +57,7 @@ sub new {
   for ($self->text()) {
     $_->tagConfigure('norm', @{$color{norm}});
     $_->tagConfigure('add',  @{$color{add}});
+    $_->tagConfigure('mod',  @{$color{mod}});
     $_->tagConfigure('del',  @{$color{del}});
     $_->tagConfigure('pad',  @{$color{pad}});
     $_->tagRaise('sel');
