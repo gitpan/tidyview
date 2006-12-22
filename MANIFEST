@@ -6,7 +6,6 @@ lib/TidyView/Options.pm
 lib/TidyView/Display.pm
 lib/TidyView/t/Frame.t
 lib/TidyView/t/Options.t
-lib/TidyView/Text.pm
 lib/TidyView/VERSION.pm
 bin/log.conf
 Makefile.PL

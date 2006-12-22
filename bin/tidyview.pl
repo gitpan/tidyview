@@ -1,5 +1,4 @@
 #!/usr/bin/perl -w
-#use lib 'C:\Documents and Settings\mjcarman\Desktop\tidyview-dev\lib';
 
 use strict;
 
@@ -7,13 +6,12 @@ use Tk qw(MainLoop);
 
 # all GUI interactions should be in the Tidyview:: namespace
 use TidyView::Frame;
-use TidyView::Text;
 use TidyView::Options;
 use TidyView::Display;
 use TidyView::VERSION;
 
 use Tk::FBox;
-use Tk::Scrollbar;
+use Tk::DiffText;
 
 # all interactions with perltidy should be in the PerlTidy:: namespace
 use PerlTidy::Run;
@@ -146,51 +144,32 @@ my $saveButtonFrame =  TidyView::Frame->new(
 						      -expand => 1,
 						     );
 
-# place two text frames side by side, left is original text, right is perltidy'd text
-my $textFrame = TidyView::Frame->new(
-				     parent      => $top,
-				     packOptions => {
-						     -side => 'top',
-						    },
-				    );
-
-
-my $originalTextFrame = TidyView::Frame->new(
-					     parent      => $textFrame,
-					     packOptions => {
-							     -side => 'left',
-							    },
-					    );
-
-(my $lockedScroller = $textFrame->Scrollbar())->pack(
-						    -side => 'left',
-						    -fill => 'y',
-						   );
-
-my $tidiedTextFrame   = TidyView::Frame->new(
-					     parent      => $textFrame,
-					     packOptions => {
-							     -side => 'right',
-							    },
-					    );
-
-my $originalTextWidget  = TidyView::Text->new(parent => $originalTextFrame, scrollbar => $lockedScroller);
-my $tidyTextWidget      = TidyView::Text->new(parent => $tidiedTextFrame,   scrollbar => $lockedScroller);
+# widget to compare original and tidied text
+my $DiffTextWidget = $top->DiffText(
+	-background       => 'white',
+	-foreground       => 'black',
+	-gutterforeground => '#a0a0a0',
+	-gutterbackground => '#e0e0e0',
+	-diffcolors => {
+		add => [-background => '#8aff8a'],
+		del => [-background => '#ff8a8a'],
+		mod => [-background => '#aea7ff'],
+		pad => [-background => '#f8f8f8'],
+	},
+)->pack(-fill => 'both', -expand => 1);
 
 TidyView::Display->preview_tidy_changes(
-					rootWindow         => $top,
-					fileToTidy         => $fileToTidy,
-					originalTextWidget => $originalTextWidget ,
-					tidyTextWidget     => $tidyTextWidget ,
-				       );
+	rootWindow     => $top,
+	fileToTidy     => $fileToTidy,
+	DiffTextWidget => $DiffTextWidget,
+);
 
 # hit this button to run perltidy with your currently selected options and see the reformatted code in righthand frame
 (my $runButton = $buttonFrame->Button(
 				      -text    => "Run PerlTidy with these options",
 				      -command => __PACKAGE__->createRunPerlTidyCallback(
-											 fileToTidy         => $fileToTidy,
-											 originalTextWidget => $originalTextWidget ,
-											 tidyTextWidget     => $tidyTextWidget ,
+											 fileToTidy     => $fileToTidy,
+											 DiffTextWidget => $DiffTextWidget,
 											),
 				     ))->pack(
 					      -side   =>'top',
@@ -202,10 +181,9 @@ TidyView::Display->preview_tidy_changes(
 (my $loadButton = $buttonFrame->Button(
 				       -text    => "Load .perltidyrc ...",
 				       -command => __PACKAGE__->createLoadPerlTidyRcCallback(
-											     parent             => $optionFrame,
-											     fileToTidy         => $fileToTidy,
-											     originalTextWidget => $originalTextWidget,
-											     tidyTextWidget     => $tidyTextWidget ,
+											     parent         => $optionFrame,
+											     fileToTidy     => $fileToTidy,
+											     DiffTextWidget => $DiffTextWidget,
 											    ),
 				      ))->pack(
 					       -side   =>'top',
@@ -225,15 +203,14 @@ exit 0;
 sub createRunPerlTidyCallback {
   my ($self, %args) = @_;
 
-  my ($fileToTidy, $originalTextWidget, $tidiedTextWidget) = @args{qw(fileToTidy originalTextWidget tidyTextWidget)};
+  my ($fileToTidy, $DiffTextWidget) = @args{qw(fileToTidy DiffTextWidget)};
 
   return sub {
     my $logger = get_logger((caller(0))[3]);
     TidyView::Display->preview_tidy_changes(
-					    rootWindow         => $top,
-					    fileToTidy         => $fileToTidy,
-					    originalTextWidget => $originalTextWidget,
-					    tidyTextWidget     => $tidiedTextWidget,
+					    rootWindow     => $top,
+					    fileToTidy     => $fileToTidy,
+					    DiffTextWidget => $DiffTextWidget,
 					   );
   }
 }
@@ -314,10 +291,9 @@ sub createLoadPerlTidyRcCallback {
 
     # run perltidy with this new config
     TidyView::Display->preview_tidy_changes(
-					    rootWindow         => $top,
-					    fileToTidy         => $fileToTidy,
-					    originalTextWidget => $originalTextWidget,
-					    tidyTextWidget     => $tidyTextWidget,
+					    rootWindow     => $top,
+					    fileToTidy     => $fileToTidy,
+					    DiffTextWidget => $DiffTextWidget,
 					   );
 
     # do save to here from now on, until told to change...
