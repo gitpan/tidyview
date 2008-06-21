@@ -11,7 +11,7 @@ INIT {
   eval "require Perl::Signature";
 
   if ($@) {
-    *_warnSemanticDelta = undef;
+    undef *_warnSemanticDelta;
   } else {
     *_warnSemanticDelta = \&warnSemanticRuination;
   }

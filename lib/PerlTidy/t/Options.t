@@ -66,7 +66,7 @@ is_deeply([PerlTidy::Options->getEntries(section => '1. Basic formatting options
 is(PerlTidy::Options->getValueType(
 				   section => '5. Linebreak controls',
 				   entry   => 'opening-brace-always-on-right',
-				  ), '', "bug reported by Steve 02072006");
+				  ), '!', "bug reported by Steve 02072006");
 
 is(PerlTidy::Options->getValueType(
 				   section => '5. Linebreak controls',
@@ -77,7 +77,7 @@ is(PerlTidy::Options->getValueType(
 				   section     => '5. Linebreak controls',
 				   entry       => 'opening-brace-always-on-right',
 				   asReference => 0,
-				  ), '', "coverage of bug fix");
+				  ), '!', "coverage of bug fix");
 
 isa_ok(PerlTidy::Options->getValueType(
 				   section     => '2. Code indentation control',
@@ -141,7 +141,7 @@ is(PerlTidy::Options->getDefaultValue(entry => 'closing-token-indentation'), 0, 
 
 is(PerlTidy::Options->getType(entry => 'check-syntax'), '!', 'checkbox');
 
-is(PerlTidy::Options->getType(entry => 'opening-brace-always-on-right'), '', 'checkbox');
+is(PerlTidy::Options->getType(entry => 'opening-brace-always-on-right'), '!', 'checkbox');
 
 is(PerlTidy::Options->getType(entry => 'indent-columns'), '=i', 'integer');
 

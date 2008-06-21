@@ -23,3 +23,5 @@
      - fix bug if user cancels from file selecion dialogue
 1.12 - coloured diff algorithms from Michael Carman, add a "mod" colour to replace add/del sequences
 1.13 - introduced dependency on Tk::DiffText, which does the colourised diff heavy lifting. Removed Tidyview::Text, as there is no longer a requirement to manage the text ourselves, Tk::DiffText does it.
+1.14 - Fixed test cases which were testing for missing types for options - as this has been fixed in perltidy, we now see them.
+     - Fixed bad setting of a glob to undef
